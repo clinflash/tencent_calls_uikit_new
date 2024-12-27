@@ -1,17 +1,19 @@
-import 'dart:io';
-
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tencent_calls_engine/tencent_calls_engine.dart';
 import 'package:tencent_calls_uikit/src/call_manager.dart';
 import 'package:tencent_calls_uikit/src/call_state.dart';
 import 'package:tencent_calls_uikit/src/data/constants.dart';
 import 'package:tencent_calls_uikit/src/i18n/i18n_utils.dart';
 import 'package:tencent_calls_uikit/src/ui/widget/common/extent_button.dart';
-import 'package:tencent_calls_uikit/src/utils/permission.dart';
 import 'package:tencent_cloud_uikit_core/tencent_cloud_uikit_core.dart';
 
+import 'my_alert_dialog.dart';
+
 class SingleFunctionWidget {
-  static Widget buildFunctionWidget(Function close) {
+  static Widget buildFunctionWidget(Function close, BuildContext context) {
     if (TUICallStatus.waiting == CallState.instance.selfUser.callStatus) {
       if (TUICallRole.caller == CallState.instance.selfUser.callRole) {
         if (TUICallMediaType.audio == CallState.instance.mediaType) {
@@ -24,7 +26,7 @@ class SingleFunctionWidget {
           }
         }
       } else {
-        return _buildAudioAndVideoCalleeWaitingView(close);
+        return _buildAudioAndVideoCalleeWaitingView(close,context);
       }
     } else if (TUICallStatus.accept == CallState.instance.selfUser.callStatus) {
       if (TUICallMediaType.audio == CallState.instance.mediaType) {
@@ -124,7 +126,8 @@ class SingleFunctionWidget {
     );
   }
 
-  static Widget _buildAudioAndVideoCalleeWaitingView(Function close) {
+  static Widget _buildAudioAndVideoCalleeWaitingView(Function close,
+      BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -146,7 +149,7 @@ class SingleFunctionWidget {
               textColor: _getTextColor(),
               imgHeight: 60,
               onTap: () {
-                _handleAccept();
+                _handleAccept(close,context);
               },
             ),
           ],
@@ -197,7 +200,9 @@ class SingleFunctionWidget {
       imgUrl: CallState.instance.isCameraOpen
           ? "assets/images/camera_on.png"
           : "assets/images/camera_off.png",
-      tips: CallState.instance.isCameraOpen ? CallKit_t("cameraIsOn") : CallKit_t("cameraIsOff"),
+      tips: CallState.instance.isCameraOpen
+          ? CallKit_t("cameraIsOn")
+          : CallKit_t("cameraIsOff"),
       textColor: _getTextColor(),
       imgHeight: 60,
       onTap: () {
@@ -296,17 +301,56 @@ class SingleFunctionWidget {
     close();
   }
 
-  static _handleAccept() async {
-    PermissionResult permissionRequestResult = PermissionResult.requesting;
-    if (Platform.isAndroid) {
-      permissionRequestResult = await Permission.request(CallState.instance.mediaType);
-    }
-    if (permissionRequestResult == PermissionResult.granted || Platform.isIOS) {
-      await CallManager.instance.accept();
-      CallState.instance.selfUser.callStatus = TUICallStatus.accept;
+  static _handleAccept(Function close,BuildContext context) async {
+    final microStatus = await Permission.microphone.request();
+    if (CallState.instance.mediaType == TUICallMediaType.video) {
+      final cameraStatus = await Permission.camera.request();
+      if (!microStatus.isGranted || !cameraStatus.isGranted) {
+        SmartDialog.show(
+          builder: (context) {
+            return MyAlertDialog(
+              title: CallKit_t('applyForMicrophoneAndCameraPermissions'),
+              content: CallKit_t('needToAccessMicrophoneAndCameraPermissions'),
+              okText: CallKit_t('goToSettings'),
+              onCancel: SmartDialog.dismiss,
+              onOk: () async{
+                await  SmartDialog.dismiss();
+                _handleReject(close);
+                await AppSettings.openAppSettings();
+              },
+            );
+          },
+        );
+      }else{
+        _acceptCall();
+      }
     } else {
-      CallManager.instance.showToast(CallKit_t("insufficientPermissions"));
+      if (!microStatus.isGranted) {
+        SmartDialog.show(
+          builder: (context) {
+            return MyAlertDialog(
+              title: CallKit_t('applyForMicrophonePermission'),
+              content: CallKit_t('needToAccessMicrophonePermission'),
+              okText: CallKit_t('goToSettings'),
+              onCancel: SmartDialog.dismiss,
+              onOk: () async{
+                await SmartDialog.dismiss();
+                _handleReject(close);
+                await AppSettings.openAppSettings();
+              },
+            );
+          },
+        );
+      }else{
+        _acceptCall();
+      }
     }
+
+  }
+
+  static _acceptCall() async{
+    await CallManager.instance.accept();
+    CallState.instance.selfUser.callStatus = TUICallStatus.accept;
     TUICore.instance.notifyEvent(setStateEvent);
   }
 
@@ -314,7 +358,8 @@ class SingleFunctionWidget {
     CallState.instance.isCameraOpen = !CallState.instance.isCameraOpen;
     if (CallState.instance.isCameraOpen) {
       await CallManager.instance
-          .openCamera(CallState.instance.camera, CallState.instance.selfUser.viewID);
+          .openCamera(
+          CallState.instance.camera, CallState.instance.selfUser.viewID);
     } else {
       await CallManager.instance.closeCamera();
     }
@@ -322,8 +367,10 @@ class SingleFunctionWidget {
   }
 
   static void _handleOpenBlurBackground() async {
-    CallState.instance.enableBlurBackground = !CallState.instance.enableBlurBackground;
-    await CallManager.instance.setBlurBackground(CallState.instance.enableBlurBackground);
+    CallState.instance.enableBlurBackground =
+    !CallState.instance.enableBlurBackground;
+    await CallManager.instance.setBlurBackground(
+        CallState.instance.enableBlurBackground);
     TUICore.instance.notifyEvent(setStateEvent);
   }
 
@@ -336,6 +383,7 @@ class SingleFunctionWidget {
     await CallManager.instance.switchCamera(CallState.instance.camera);
     TUICore.instance.notifyEvent(setStateEvent);
   }
+
 
   static Color _getTextColor() {
     return Colors.white;
