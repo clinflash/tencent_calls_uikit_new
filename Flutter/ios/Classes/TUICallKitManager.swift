@@ -11,7 +11,7 @@ import Foundation
 import Flutter
 import TUICallEngine
 import TUICore
-import TXLiteAVSDK_Professional
+import TXLiteAVSDK_TRTC
 
 class TUICallKitManager {
     static let shared = TUICallKitManager.init()

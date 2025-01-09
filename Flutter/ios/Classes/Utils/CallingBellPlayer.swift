@@ -8,7 +8,7 @@
 import Foundation
 import AVFAudio
 import TUICallEngine
-import TXLiteAVSDK_Professional
+import TXLiteAVSDK_TRTC
 
 let CALLKIT_AUDIO_DIAL_ID: Int32 = 48
 
