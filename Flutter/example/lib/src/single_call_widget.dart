@@ -187,7 +187,7 @@ class _SingleCallWidgetState extends State<SingleCallWidget> {
   _call() {
     TUICallKit.instance.call(
         _calledUserId,
-        _isAudioCall ? TUICallMediaType.audio : TUICallMediaType.video,
+        _isAudioCall ? TUICallMediaType.audio : TUICallMediaType.video,{},
         _createTUICallParams());
   }
 

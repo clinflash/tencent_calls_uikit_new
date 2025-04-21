@@ -3,12 +3,12 @@ import 'package:tencent_calls_uikit/src/call_state.dart';
 import 'package:tencent_calls_uikit/src/i18n/i18n_utils.dart';
 
 class OfflinePushInfoConfig {
-  static TUIOfflinePushInfo createOfflinePushInfo() {
+  static TUIOfflinePushInfo createOfflinePushInfo([String? desc]) {
     TUIOfflinePushInfo pushInfo = TUIOfflinePushInfo();
     pushInfo.title = CallState.instance.selfUser.nickname.isEmpty
         ? CallState.instance.selfUser.id
         : CallState.instance.selfUser.nickname;
-    pushInfo.desc = pushInfo.desc;
+    pushInfo.desc = desc??CallKit_t("youHaveANewCall");;
     // OPPO must set ChannelID to receive push messages. If the console is configured, no call is required in the code
     // OPPO must set a ChannelID to receive push messages. If you set it on the console, you don't need set here.
     // pushInfo.setAndroidOPPOChannelID("tuikit");

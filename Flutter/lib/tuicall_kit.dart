@@ -38,9 +38,9 @@ class TUICallKit {
   ///
   /// @param userId        callees
   /// @param callMediaType Call type
-  Future<TUIResult> call(String userId, TUICallMediaType callMediaType,
+  Future<TUIResult> call(String userId, TUICallMediaType callMediaType, Map<String, dynamic> param,
       [TUICallParams? params]) async {
-    return await CallManager.instance.call(userId, callMediaType, params);
+    return await CallManager.instance.call(userId, callMediaType, param, params);
   }
 
   ///Make a group call

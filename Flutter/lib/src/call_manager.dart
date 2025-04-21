@@ -59,7 +59,7 @@ class CallManager {
     }
   }
 
-  Future<TUIResult> call(String userId, TUICallMediaType callMediaType,
+  Future<TUIResult> call(String userId, TUICallMediaType callMediaType,Map<String, dynamic> param,
       [TUICallParams? params]) async {
     TRTCLogger.info(
         'CallManager call(userId:$userId, callMediaType: $callMediaType, params:${params.toString()}), version:${Constants.pluginVersion}');
@@ -81,7 +81,7 @@ class CallManager {
     }
     if (params == null) {
       params = TUICallParams();
-      params.offlinePushInfo = OfflinePushInfoConfig.createOfflinePushInfo();
+      params.offlinePushInfo = OfflinePushInfoConfig.createOfflinePushInfo(param['desc'] as String);
     }
     if (Platform.isAndroid) {
       final permissionResult = await Permission.request(callMediaType);

@@ -28,7 +28,7 @@ class CallService extends AbstractTUIService {
       }
 
       if (groupId.isEmpty) {
-        TUICallKit.instance.call(userIDs.first, mediaType);
+        TUICallKit.instance.call(userIDs.first, mediaType, param);
       } else {
         TUICallKit.instance.groupCall(groupId, userIDs, mediaType);
       }
