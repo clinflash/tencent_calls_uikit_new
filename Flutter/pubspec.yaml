@@ -21,7 +21,7 @@ dependencies:
     git: https://github.com/clinflash/tencent_calls_engine.git
   tencent_cloud_uikit_core: ^1.7.3
   tencent_cloud_chat_sdk: any
-  permission_handler: ^11.3.1
+  permission_handler: ^12.0.1
   app_settings: ^5.1.1
   flutter_smart_dialog: ^4.9.4
 
